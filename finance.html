@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Finance Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --income: #22c55e;
+            --expense: #ef4444;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        header {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title h1 { font-size: 1.5rem; color: var(--primary); }
+        .title p { font-size: 0.8rem; color: var(--text-dim); }
+
+        /* Dashboard Cards */
+        .balance-card {
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            padding: 25px;
+            border-radius: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.3);
+        }
+
+        .balance-card p { font-size: 0.9rem; opacity: 0.8; }
+        .balance-card h2 { font-size: 2.2rem; margin: 5px 0; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-box p { font-size: 0.75rem; color: var(--text-dim); }
+        .stat-box h3 { font-size: 1.1rem; margin-top: 5px; }
+        .stat-income h3 { color: var(--income); }
+        .stat-expense h3 { color: var(--expense); }
+
+        /* Form Card */
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--text-dim); }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        .btn-add {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: #0f172a;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-add:active { transform: scale(0.98); }
+
+        /* Transaction List */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .transaction-item {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-left: 4px solid transparent;
+        }
+
+        .t-income { border-left-color: var(--income); }
+        .t-expense { border-left-color: var(--expense); }
+
+        .t-info h4 { font-size: 0.95rem; }
+        .t-info p { font-size: 0.75rem; color: var(--text-dim); }
+
+        .t-amount { font-weight: 700; }
+        .amt-income { color: var(--income); }
+        .amt-expense { color: var(--expense); }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+
+        .no-data { text-align: center; color: var(--text-dim); padding: 30px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <div class="title">
+            <h1>Elite Finance</h1>
+            <p id="currentDate"></p>
+        </div>
+        <button onclick="exportCSV()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; cursor:pointer;">EKSPOR CSV</button>
+    </header>
+
+    <!-- Balance Dashboard -->
+    <div class="balance-card">
+        <p>Total Saldo Anda</p>
+        <h2 id="totalBalance">Rp 0</h2>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-box stat-income">
+            <p>Pemasukan</p>
+            <h3 id="totalIncome">Rp 0</h3>
+        </div>
+        <div class="stat-box stat-expense">
+            <p>Pengeluaran</p>
+            <h3 id="totalExpense">Rp 0</h3>
+        </div>
+    </div>
+
+    <!-- Input Form -->
+    <div class="card">
+        <div class="input-group">
+            <label>Deskripsi Transaksi</label>
+            <input type="text" id="desc" placeholder="Contoh: Gaji Bulanan, Makan Siang...">
+        </div>
+        <div class="input-group">
+            <label>Jumlah (Rp)</label>
+            <input type="number" id="amount" placeholder="0">
+        </div>
+        <div class="input-group">
+            <label>Jenis</label>
+            <select id="type">
+                <option value="income">Pemasukan (+)</option>
+                <option value="expense">Pengeluaran (-)</option>
+            </select>
+        </div>
+        <button class="btn-add" onclick="addTransaction()">Tambah Transaksi</button>
+    </div>
+
+    <!-- History -->
+    <div class="history-header">
+        <h3>Riwayat Transaksi</h3>
+        <button onclick="clearAll()" style="background:none; border:none; color:var(--expense); font-size:0.7rem; cursor:pointer;">HAPUS SEMUA</button>
+    </div>
+    <div id="list">
+        <!-- Items go here -->
+    </div>
+</div>
+
+<script>
+    let transactions = JSON.parse(localStorage.getItem('elite_finance_data')) || [];
+
+    function formatRupiah(num) {
+        return "Rp " + Number(num).toLocaleString('id-ID');
+    }
+
+    function updateDashboard() {
+        const income = transactions
+            .filter(t => t.type === 'income')
+            .reduce((acc, t) => acc + t.amount, 0);
+        
+        const expense = transactions
+            .filter(t => t.type === 'expense')
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        const balance = income - expense;
+
+        document.getElementById('totalBalance').innerText = formatRupiah(balance);
+        document.getElementById('totalIncome').innerText = formatRupiah(income);
+        document.getElementById('totalExpense').innerText = formatRupiah(expense);
+        
+        renderList();
+    }
+
+    function addTransaction() {
+        const desc = document.getElementById('desc').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+        const type = document.getElementById('type').value;
+
+        if (!desc || isNaN(amount)) {
+            alert("Harap isi deskripsi dan jumlah!");
+            return;
+        }
+
+        const transaction = {
+            id: Date.now(),
+            desc,
+            amount,
+            type,
+            date: new Date().toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' })
+        };
+
+        transactions.unshift(transaction);
+        saveData();
+        
+        // Reset inputs
+        document.getElementById('desc').value = '';
+        document.getElementById('amount').value = '';
+        updateDashboard();
+    }
+
+    function deleteTransaction(id) {
+        transactions = transactions.filter(t => t.id !== id);
+        saveData();
+        updateDashboard();
+    }
+
+    function clearAll() {
+        if(confirm("Hapus semua riwayat keuangan?")) {
+            transactions = [];
+            saveData();
+            updateDashboard();
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem('elite_finance_data', JSON.stringify(transactions));
+    }
+
+    function renderList() {
+        const listEl = document.getElementById('list');
+        listEl.innerHTML = '';
+
+        if (transactions.length === 0) {
+            listEl.innerHTML = '<div class="no-data">Belum ada transaksi tercatat.</div>';
+            return;
+        }
+
+        transactions.forEach(t => {
+            const item = document.createElement('div');
+            item.className = `transaction-item t-${t.type}`;
+            item.innerHTML = `
+                <div class="t-info">
+                    <h4>${t.desc}</h4>
+                    <p>${t.date}</p>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <span class="t-amount amt-${t.type}">${t.type === 'income' ? '+' : '-'}${formatRupiah(t.amount)}</span>
+                    <button class="delete-btn" onclick="deleteTransaction(${t.id})">✕</button>
+                </div>
+            `;
+            listEl.appendChild(item);
+        });
+    }
+
+    function exportCSV() {
+        if(transactions.length === 0) return;
+        let csv = "Tanggal,Deskripsi,Jenis,Jumlah\n";
+        transactions.forEach(t => {
+            csv += `${t.date},${t.desc},${t.type},${t.amount}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'Laporan_Keuangan_Elite.csv');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    // Set Current Date
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long' });
+
+    // Initial Load
+    updateDashboard();
+</script>
+
+</body>
+</html>
