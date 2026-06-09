@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Finance Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --income: #22c55e;
+            --expense: #ef4444;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent-gold: #fbbf24;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header {
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title h1 { font-size: 1.5rem; color: var(--primary); }
+        .title p { font-size: 0.8rem; color: var(--text-dim); }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: var(--card);
+            padding: 5px;
+            border-radius: 15px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: var(--text-dim);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: var(--bg);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Dashboard Cards */
+        .balance-card {
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            padding: 25px;
+            border-radius: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.3);
+            text-align: center;
+        }
+
+        .balance-card p { font-size: 0.9rem; opacity: 0.8; }
+        .balance-card h2 { font-size: 2.5rem; margin: 5px 0; font-weight: 800; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+
+        .stat-box p { font-size: 0.75rem; color: var(--text-dim); }
+        .stat-box h3 { font-size: 1.1rem; margin-top: 5px; }
+        .stat-income h3 { color: var(--income); }
+        .stat-expense h3 { color: var(--expense); }
+
+        /* Form Card */
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; margin-bottom: 6px; color: var(--text-dim); }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        .btn-add {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: #0f172a;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-add:active { transform: scale(0.98); }
+
+        /* Transaction List */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .transaction-item {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-left: 4px solid transparent;
+        }
+
+        .t-income { border-left-color: var(--income); }
+        .t-expense { border-left-color: var(--expense); }
+
+        .t-info h4 { font-size: 0.95rem; }
+        .t-info p { font-size: 0.75rem; color: var(--text-dim); }
+
+        .t-amount { font-weight: 700; }
+        .amt-income { color: var(--income); }
+        .amt-expense { color: var(--expense); }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+
+        /* Savings Target Cards */
+        .category-card {
+            background: var(--card);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 6px solid var(--primary);
+        }
+
+        .category-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .category-card.reached { opacity: 0.8; border-left-color: var(--success) !important; filter: grayscale(0.2); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .card-title h3 { font-size: 1.2rem; margin-bottom: 4px; }
+        .card-title p { font-size: 0.8rem; color: var(--text-dim); }
+
+        .progress-container { background: rgba(255,255,255,0.1); height: 12px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .progress-bar { height: 100%; width: 0%; border-radius: 10px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .card-footer { display: flex; justify-content: space-between; font-size: 0.85rem; margin-top: 10px; }
+        .remainder { color: var(--accent-gold); font-weight: 600; }
+        .reached-text { color: var(--success); font-weight: 700; }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 15px; }
+        .btn-sm { 
+            padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; 
+            font-weight: 600; font-size: 0.75rem; transition: opacity 0.2s;
+        }
+        .btn-update { background: var(--success); color: white; flex: 1; }
+        .btn-edit-sm { background: rgba(255,255,255,0.1); color: var(--text-main); }
+        .btn-delete-sm { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        /* Modal */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; }
+        
+        .section-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.05);
+            margin: 30px 0;
+            position: relative;
+        }
+        .section-divider span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg);
+            padding: 0 15px;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .no-data { text-align: center; color: var(--text-dim); padding: 50px 0; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <div class="title">
+            <h1>Elite Finance Pro</h1>
+            <p id="currentDate"></p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="exportCSV()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; cursor:pointer;">EKSPOR CSV</button>
+            <button onclick="resetAllData()" style="background:none; border:none; color:var(--expense); font-size:0.8rem; cursor:pointer;">RESET</button>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('finance')">Keuangan</div>
+        <div class="tab" onclick="switchTab('savings')">Tabungan</div>
+    </div>
+
+    <!-- TAB: FINANCE -->
+    <div id="finance-tab" class="tab-content active">
+        <div class="balance-card">
+            <p>Total Saldo (Dompet)</p>
+            <h2 id="totalBalance">Rp 0</h2>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box stat-income">
+                <p>Pemasukan</p>
+                <h3 id="totalIncome">Rp 0</h3>
+            </div>
+            <div class="stat-box stat-expense">
+                <p>Pengeluaran</p>
+                <h3 id="totalExpense">Rp 0</h3>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label>Deskripsi Transaksi</label>
+                <input type="text" id="desc" placeholder="Gaji, Makan, Jajan...">
+            </div>
+            <div class="stats-grid" style="margin-bottom: 0;">
+                <div class="input-group">
+                    <label>Jumlah (Rp)</label>
+                    <input type="number" id="amount" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Jenis</label>
+                    <select id="type">
+                        <option value="income">Pemasukan (+)</option>
+                        <option value="expense">Pengeluaran (-)</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-add" onclick="addTransaction()">Tambah Transaksi</button>
+        </div>
+
+        <div class="history-header">
+            <h3>Riwayat Transaksi</h3>
+            <button onclick="clearTransactions()" style="background:none; border:none; color:var(--expense); font-size:0.7rem; cursor:pointer;">HAPUS SEMUA</button>
+        </div>
+        <div id="transaction-list"></div>
+    </div>
+
+    <!-- TAB: SAVINGS -->
+    <div id="savings-tab" class="tab-content">
+        <div class="balance-card" style="background: linear-gradient(135deg, #fbbf24, #d97706);">
+            <p>Total Tabungan Terkumpul</p>
+            <h2 id="grand-total-savings">Rp 0</h2>
+            <div style="font-size: 0.8rem; opacity: 0.9; margin-top: 5px;">Progress Global: <span id="grand-percent">0%</span></div>
+        </div>
+
+        <button class="btn-add" style="margin-bottom: 25px;" onclick="openModal('categoryModal')">+ TAMBAH TARGET BARU</button>
+
+        <div id="active-targets"></div>
+        
+        <div id="reached-divider" class="section-divider" style="display: none;">
+            <span>Target Tercapai ✅</span>
+        </div>
+        
+        <div id="reached-targets"></div>
+    </div>
+</div>
+
+<!-- MODAL: SAVINGS TARGET -->
+<div class="modal" id="categoryModal">
+    <div class="modal-content">
+        <div class="history-header">
+            <h2 id="modalTitle">Tambah Target</h2>
+            <button onclick="closeModal('categoryModal')" style="color: var(--text-dim); background:none; border:none; font-size: 1.5rem;">&times;</button>
+        </div>
+        <input type="hidden" id="edit-id">
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label>Nama Kategori</label>
+            <input type="text" id="cat-name" placeholder="Contoh: Beli Motor">
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label>Target Uang (Rp)</label>
+            <input type="number" id="cat-target" placeholder="3000000">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label>Catatan (Opsional)</label>
+            <input type="text" id="cat-note" placeholder="Warna Merah / Target Desember">
+        </div>
+        <button onclick="saveCategory()" class="btn-add">Simpan Target</button>
+    </div>
+</div>
+
+<!-- MODAL: UPDATE SAVINGS BALANCE -->
+<div class="modal" id="fundModal">
+    <div class="modal-content">
+        <div class="history-header">
+            <h2>Update Saldo</h2>
+            <button onclick="closeModal('fundModal')" style="color: var(--text-dim); background:none; border:none; font-size: 1.5rem;">&times;</button>
+        </div>
+        <p id="fund-cat-name" style="font-size: 0.85rem; color: var(--primary); margin-bottom: 15px;"></p>
+        <input type="hidden" id="fund-id">
+        <div class="form-group" style="margin-bottom: 10px;">
+            <label>Jumlah Uang (Rp)</label>
+            <input type="number" id="fund-amount" placeholder="0">
+        </div>
+        <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 20px;">Gunakan angka negatif (-) untuk mengambil tabungan.</p>
+        <button onclick="updateSavingsBalance()" class="btn-add" style="background: var(--success);">Update Saldo</button>
+    </div>
+</div>
+
+<script>
+    // DATA STATE
+    let transactions = JSON.parse(localStorage.getItem('elite_finance_data')) || [];
+    let categories = JSON.parse(localStorage.getItem('elite_savings_data')) || [];
+
+    // HELPERS
+    const formatRp = (num) => "Rp " + Math.floor(num).toLocaleString('id-ID');
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        if (tab === 'finance') {
+            document.querySelector('.tab:nth-child(1)').classList.add('active');
+            document.getElementById('finance-tab').classList.add('active');
+        } else {
+            document.querySelector('.tab:nth-child(2)').classList.add('active');
+            document.getElementById('savings-tab').classList.add('active');
+        }
+    }
+
+    // FINANCE LOGIC
+    function addTransaction() {
+        const desc = document.getElementById('desc').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+        const type = document.getElementById('type').value;
+
+        if (!desc || isNaN(amount)) return alert("Isi deskripsi dan jumlah!");
+
+        transactions.unshift({
+            id: Date.now(),
+            desc,
+            amount,
+            type,
+            date: new Date().toLocaleDateString('id-ID', { day:'numeric', month:'short' })
+        });
+
+        saveData();
+        renderFinance();
+        document.getElementById('desc').value = '';
+        document.getElementById('amount').value = '';
+    }
+
+    function deleteTransaction(id) {
+        transactions = transactions.filter(t => t.id !== id);
+        saveData();
+        renderFinance();
+    }
+
+    function clearTransactions() {
+        if(confirm("Hapus semua riwayat transaksi?")) {
+            transactions = [];
+            saveData();
+            renderFinance();
+        }
+    }
+
+    // SAVINGS LOGIC
+    function openModal(id, catId = null) {
+        document.getElementById(id).style.display = 'flex';
+        if(catId) {
+            const cat = categories.find(c => c.id === catId);
+            if(id === 'categoryModal') {
+                document.getElementById('modalTitle').innerText = "Edit Target";
+                document.getElementById('edit-id').value = cat.id;
+                document.getElementById('cat-name').value = cat.name;
+                document.getElementById('cat-target').value = cat.target;
+                document.getElementById('cat-note').value = cat.note;
+            } else if(id === 'fundModal') {
+                document.getElementById('fund-id').value = cat.id;
+                document.getElementById('fund-cat-name').innerText = cat.name;
+            }
+        } else {
+            document.getElementById('modalTitle').innerText = "Tambah Target";
+            document.getElementById('edit-id').value = "";
+            document.getElementById('cat-name').value = "";
+            document.getElementById('cat-target').value = "";
+            document.getElementById('cat-note').value = "";
+        }
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function saveCategory() {
+        const id = document.getElementById('edit-id').value;
+        const name = document.getElementById('cat-name').value;
+        const target = parseFloat(document.getElementById('cat-target').value);
+        const note = document.getElementById('cat-note').value;
+
+        if(!name || !target) return alert("Nama dan Target wajib diisi!");
+
+        if(id) {
+            const index = categories.findIndex(c => c.id == id);
+            categories[index] = { ...categories[index], name, target, note };
+        } else {
+            categories.push({
+                id: Date.now(),
+                name,
+                target,
+                balance: 0,
+                note,
+                color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+                history: []
+            });
+        }
+
+        closeModal('categoryModal');
+        saveData();
+        renderSavings();
+    }
+
+    function updateSavingsBalance() {
+        const id = document.getElementById('fund-id').value;
+        const amount = parseFloat(document.getElementById('fund-amount').value);
+        if(isNaN(amount)) return;
+
+        const index = categories.findIndex(c => c.id == id);
+        const oldBalance = categories[index].balance;
+        categories[index].balance += amount;
+        
+        categories[index].history.push({
+            date: new Date().toLocaleDateString('id-ID'),
+            amount: amount
+        });
+
+        if(categories[index].history.length > 3) categories[index].history.shift();
+
+        if(categories[index].balance >= categories[index].target && oldBalance < categories[index].target) {
+            alert(`🎉 Target "${categories[index].name}" telah tercapai!`);
+        }
+
+        document.getElementById('fund-amount').value = "";
+        closeModal('fundModal');
+        saveData();
+        renderSavings();
+    }
+
+    function deleteCategory(id) {
+        if(confirm("Hapus target ini?")) {
+            categories = categories.filter(c => c.id !== id);
+            saveData();
+            renderSavings();
+        }
+    }
+
+    // GLOBAL DATA MANAGEMENT
+    function saveData() {
+        localStorage.setItem('elite_finance_data', JSON.stringify(transactions));
+        localStorage.setItem('elite_savings_data', JSON.stringify(categories));
+    }
+
+    function resetAllData() {
+        if(confirm("⚠️ Hapus SEMUA data aplikasi?")) {
+            localStorage.clear();
+            transactions = [];
+            categories = [];
+            renderAll();
+        }
+    }
+
+    // RENDERING
+    function renderFinance() {
+        const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+        const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+        const balance = income - expense;
+
+        document.getElementById('totalBalance').innerText = formatRp(balance);
+        document.getElementById('totalIncome').innerText = formatRp(income);
+        document.getElementById('totalExpense').innerText = formatRp(expense);
+
+        const listEl = document.getElementById('transaction-list');
+        listEl.innerHTML = transactions.length ? '' : '<div class="no-data">Belum ada transaksi.</div>';
+
+        transactions.forEach(t => {
+            const div = document.createElement('div');
+            div.className = `transaction-item t-${t.type}`;
+            div.innerHTML = `
+                <div class="t-info">
+                    <h4>${t.desc}</h4>
+                    <p>${t.date}</p>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <span class="t-amount amt-${t.type}">${t.type === 'income' ? '+' : '-'}${formatRp(t.amount)}</span>
+                    <button class="delete-btn" onclick="deleteTransaction(${t.id})">✕</button>
+                </div>
+            `;
+            listEl.appendChild(div);
+        });
+    }
+
+    function renderSavings() {
+        const activeContainer = document.getElementById('active-targets');
+        const reachedContainer = document.getElementById('reached-targets');
+        const grandTotalEl = document.getElementById('grand-total-savings');
+        const grandPercentEl = document.getElementById('grand-percent');
+        const divider = document.getElementById('reached-divider');
+
+        activeContainer.innerHTML = "";
+        reachedContainer.innerHTML = "";
+        
+        let totalAllBalance = 0;
+        let totalAllTarget = 0;
+
+        if(categories.length === 0) {
+            activeContainer.innerHTML = `<div class="no-data">Belum ada target tabungan.</div>`;
+            divider.style.display = 'none';
+            grandTotalEl.innerText = "Rp 0";
+            grandPercentEl.innerText = "0%";
+            return;
+        }
+
+        // Sort categories: Active first, Reached last
+        const sortedCategories = [...categories].sort((a, b) => {
+            const aReached = a.balance >= a.target;
+            const bReached = b.balance >= b.target;
+            if (aReached === bReached) return b.id - a.id; // Secondary sort by newest
+            return aReached ? 1 : -1;
+        });
+
+        let reachedCount = 0;
+
+        sortedCategories.forEach(cat => {
+            const percent = Math.min((cat.balance / cat.target) * 100, 100).toFixed(1);
+            const isReached = cat.balance >= cat.target;
+            const sisa = Math.max(cat.target - cat.balance, 0);
+            
+            totalAllBalance += cat.balance;
+            totalAllTarget += cat.target;
+
+            const card = document.createElement('div');
+            card.className = `category-card ${isReached ? 'reached' : ''}`;
+            card.style.borderLeftColor = cat.color;
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title">
+                        <h3>${cat.name}</h3>
+                        <p>${cat.note || 'Tanpa catatan'}</p>
+                    </div>
+                    <div style="text-align: right">
+                        <b style="color: ${isReached ? 'var(--success)' : 'var(--primary)'}">${percent}%</b>
+                    </div>
+                </div>
+                <div style="font-size: 0.9rem; margin-bottom: 5px;">
+                    <b>${formatRp(cat.balance)}</b> <span style="color: var(--text-dim)">/ ${formatRp(cat.target)}</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: ${percent}%; background-color: ${isReached ? 'var(--success)' : cat.color}"></div>
+                </div>
+                <div class="card-footer">
+                    <span class="${isReached ? 'reached-text' : 'remainder'}">${isReached ? '✅ TARGET TERCAPAI' : 'Sisa: ' + formatRp(sisa)}</span>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-sm btn-update" onclick="openModal('fundModal', ${cat.id})">UPDATE</button>
+                    <button class="btn-sm btn-edit-sm" onclick="openModal('categoryModal', ${cat.id})">EDIT</button>
+                    <button class="btn-sm btn-delete-sm" onclick="deleteCategory(${cat.id})">HAPUS</button>
+                </div>
+            `;
+
+            if (isReached) {
+                reachedContainer.appendChild(card);
+                reachedCount++;
+            } else {
+                activeContainer.appendChild(card);
+            }
+        });
+
+        divider.style.display = reachedCount > 0 ? 'block' : 'none';
+        grandTotalEl.innerText = formatRp(totalAllBalance);
+        const grandPercent = totalAllTarget > 0 ? ((totalAllBalance / totalAllTarget) * 100).toFixed(1) : 0;
+        grandPercentEl.innerText = grandPercent + "%";
+    }
+
+    function exportCSV() {
+        let csv = "DATA KEUANGAN\nTanggal,Deskripsi,Jenis,Jumlah\n";
+        transactions.forEach(t => { csv += `${t.date},${t.desc},${t.type},${t.amount}\n`; });
+        
+        csv += "\nDATA TABUNGAN\nNama,Target,Saldo,Status\n";
+        categories.forEach(c => {
+            const status = c.balance >= c.target ? "TERCAPAI" : "BELUM";
+            csv += `${c.name},${c.target},${c.balance},${status}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Elite_Finance_Report.csv';
+        a.click();
+    }
+
+    function renderAll() {
+        renderFinance();
+        renderSavings();
+    }
+
+    // INIT
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long' });
+    renderAll();
+</script>
+
+</body>
+</html>
